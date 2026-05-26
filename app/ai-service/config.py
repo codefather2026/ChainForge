@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     ai_deterministic_mode: bool = False
     llm_timeout_seconds: int = 30
     
+    # Circuit Breaker settings
+    circuit_breaker_failure_threshold: int = 3
+    circuit_breaker_recovery_timeout_seconds: float = 30.0
+    
     # Application settings
     app_env: str = "development"
     log_level: str = "INFO"

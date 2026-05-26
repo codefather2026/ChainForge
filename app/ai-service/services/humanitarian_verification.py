@@ -10,6 +10,8 @@ import httpx
 
 from config import settings
 from services.humanitarian_prompt import HumanitarianPromptEngine
+from services.circuit_breaker import CircuitBreaker
+from exceptions import AIServiceError
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,18 @@ class HumanitarianVerificationService:
 
     def __init__(self):
         self.prompt_engine = HumanitarianPromptEngine()
+        self.breakers = {
+            "openai": CircuitBreaker(
+                name="openai",
+                failure_threshold=settings.circuit_breaker_failure_threshold,
+                recovery_timeout=settings.circuit_breaker_recovery_timeout_seconds,
+            ),
+            "groq": CircuitBreaker(
+                name="groq",
+                failure_threshold=settings.circuit_breaker_failure_threshold,
+                recovery_timeout=settings.circuit_breaker_recovery_timeout_seconds,
+            ),
+        }
 
     def verify_claim(
         self,
@@ -26,6 +40,7 @@ class HumanitarianVerificationService:
         supporting_evidence: Optional[List[str]] = None,
         context_factors: Optional[Dict[str, Any]] = None,
         provider_preference: str = "auto",
+        timeout: Optional[float] = None,
     ) -> Dict[str, Any]:
         start_time = time.time()
         try:
@@ -50,6 +65,12 @@ class HumanitarianVerificationService:
             errors: List[str] = []
 
             for provider in providers:
+                breaker = self.breakers.get(provider)
+                if breaker and not breaker.allow_request():
+                    logger.warning("Circuit breaker is OPEN for provider=%s. Skipping.", provider)
+                    errors.append(f"provider={provider}, error=Circuit breaker is OPEN")
+                    continue
+
                 model = self._get_model_for_provider(provider)
                 for prompt_variant, prompt in (("primary", primary_prompt), ("fallback", fallback_prompt)):
                     try:
@@ -59,13 +80,27 @@ class HumanitarianVerificationService:
                             model,
                             prompt_variant,
                         )
-                        raw_content = self._call_provider(
-                            provider=provider,
-                            model=model,
-                            system_prompt=prompt["system"],
-                            user_prompt=prompt["user"],
-                        )
+                        try:
+                            raw_content = self._call_provider(
+                                provider=provider,
+                                model=model,
+                                system_prompt=prompt["system"],
+                                user_prompt=prompt["user"],
+                                timeout=timeout,
+                            )
+                        except TypeError as exc:
+                            if "timeout" in str(exc):
+                                raw_content = self._call_provider(
+                                    provider=provider,
+                                    model=model,
+                                    system_prompt=prompt["system"],
+                                    user_prompt=prompt["user"],
+                                )
+                            else:
+                                raise exc
                         parsed = self._parse_json_response(raw_content)
+                        if breaker:
+                            breaker.record_success()
                         return {
                             "provider": provider,
                             "model": model,
@@ -74,6 +109,8 @@ class HumanitarianVerificationService:
                             "raw_response": raw_content,
                         }
                     except Exception as exc:
+                        if breaker:
+                            breaker.record_failure()
                         err = f"provider={provider}, model={model}, prompt={prompt_variant}, error={exc}"
                         errors.append(err)
                         logger.warning("Humanitarian verification attempt failed: %s", err)
@@ -102,14 +139,27 @@ class HumanitarianVerificationService:
             return settings.groq_model
         raise ValueError(f"Unsupported provider: {provider}")
 
-    def _call_provider(self, provider: str, model: str, system_prompt: str, user_prompt: str) -> str:
+    def _call_provider(
+        self,
+        provider: str,
+        model: str,
+        system_prompt: str,
+        user_prompt: str,
+        timeout: Optional[float] = None,
+    ) -> str:
         if provider == "openai":
-            return self._call_openai(model, system_prompt, user_prompt)
+            return self._call_openai(model, system_prompt, user_prompt, timeout)
         if provider == "groq":
-            return self._call_groq(model, system_prompt, user_prompt)
+            return self._call_groq(model, system_prompt, user_prompt, timeout)
         raise ValueError(f"Unsupported provider: {provider}")
 
-    def _call_openai(self, model: str, system_prompt: str, user_prompt: str) -> str:
+    def _call_openai(
+        self,
+        model: str,
+        system_prompt: str,
+        user_prompt: str,
+        timeout: Optional[float] = None,
+    ) -> str:
         if not settings.openai_api_key:
             raise RuntimeError("OpenAI API key is not configured")
 
@@ -119,9 +169,16 @@ class HumanitarianVerificationService:
             model=model,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            timeout=timeout,
         )
 
-    def _call_groq(self, model: str, system_prompt: str, user_prompt: str) -> str:
+    def _call_groq(
+        self,
+        model: str,
+        system_prompt: str,
+        user_prompt: str,
+        timeout: Optional[float] = None,
+    ) -> str:
         if not settings.groq_api_key:
             raise RuntimeError("Groq API key is not configured")
 
@@ -131,6 +188,7 @@ class HumanitarianVerificationService:
             model=model,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            timeout=timeout,
         )
 
     def _call_chat_completion_api(
@@ -140,6 +198,7 @@ class HumanitarianVerificationService:
         model: str,
         system_prompt: str,
         user_prompt: str,
+        timeout: Optional[float] = None,
     ) -> str:
         if settings.ai_deterministic_mode:
             logger.info("Deterministic AI mode enabled: returning stable response")
@@ -159,12 +218,35 @@ class HumanitarianVerificationService:
             "Content-Type": "application/json",
         }
 
-        timeout = float(settings.llm_timeout_seconds)
+        req_timeout = timeout if timeout is not None else float(settings.llm_timeout_seconds)
+        provider_name = "openai" if "openai" in base_url else "groq"
 
-        with httpx.Client(timeout=timeout) as client:
-            response = client.post(base_url, json=payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+        try:
+            with httpx.Client(timeout=req_timeout) as client:
+                response = client.post(base_url, json=payload, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+        except httpx.TimeoutException as exc:
+            logger.error("LLM provider %s request timed out after %s seconds", provider_name, req_timeout)
+            raise AIServiceError(
+                message=f"LLM request timed out after {req_timeout}s",
+                code="AI_TIMEOUT",
+                details={"provider": provider_name, "timeout_seconds": req_timeout},
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            logger.error("LLM provider %s returned status %s: %s", provider_name, exc.response.status_code, exc.response.text)
+            raise AIServiceError(
+                message=f"LLM request failed with status {exc.response.status_code}",
+                code="AI_PROVIDER_ERROR",
+                details={"provider": provider_name, "status_code": exc.response.status_code},
+            ) from exc
+        except Exception as exc:
+            logger.error("LLM provider %s connection or unexpected error: %s", provider_name, str(exc))
+            raise AIServiceError(
+                message=f"LLM connection error: {str(exc)}",
+                code="AI_CONNECTION_ERROR",
+                details={"provider": provider_name},
+            ) from exc
 
         try:
             content = data["choices"][0]["message"]["content"]
