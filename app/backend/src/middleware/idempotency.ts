@@ -1,20 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
 import { createHash } from 'crypto';
-import { RedisClient } from 'redis';
+import type { RedisClientType } from 'redis';
 import {
   IdempotencyRecord,
   IdempotencyRequest,
 } from '../types/idempotency.types';
 
-function fingerprint(body: any): string {
+function fingerprint(body: unknown): string {
   return createHash('sha256').update(JSON.stringify(body)).digest('hex');
 }
 
 export function idempotencyMiddleware(
-  redisClient: RedisClient,
+  redisClient: RedisClientType,
   ttlSeconds: number = 86400,
 ) {
-  return async (req: IdempotencyRequest, res: Response, next: NextFunction) => {
+  return async (
+    req: IdempotencyRequest & Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const key = req.headers['idempotency-key'] as string | undefined;
     const endpoint = req.originalUrl || req.url;
 
@@ -24,60 +28,64 @@ export function idempotencyMiddleware(
 
     const cacheKey = `idempotency:${endpoint}:${key}`;
 
-    return new Promise<void>(resolve => {
-      redisClient.get(cacheKey, (err, cached) => {
-        if (err) {
-          console.error('Redis error in idempotency middleware:', err);
-          return next(); // fail open
+    try {
+      const cached = await redisClient.get(cacheKey);
+
+      if (cached) {
+        const record: IdempotencyRecord = JSON.parse(
+          cached,
+        ) as IdempotencyRecord;
+
+        const currentFingerprint = fingerprint(req.body);
+
+        if (currentFingerprint !== record.fingerprint) {
+          return res.status(409).json({
+            error: 'Idempotency key already used with a different request body',
+            key,
+          });
         }
 
-        if (cached) {
-          const record: IdempotencyRecord = JSON.parse(cached);
-          const currentFingerprint = fingerprint(req.body);
+        res.status(record.statusCode).set(record.headers).send(record.body);
 
-          if (currentFingerprint !== record.fingerprint) {
-            res.status(409).json({
-              error:
-                'Idempotency key already used with a different request body',
-              key,
-            });
-            return resolve();
-          }
+        return;
+      }
 
-          // Return cached response
-          res.status(record.statusCode).set(record.headers).send(record.body);
-          return resolve();
-        }
+      // First request – store fingerprint and intercept response
+      const reqFingerprint = fingerprint(req.body);
 
-        // First request – store fingerprint and intercept response
-        const reqFingerprint = fingerprint(req.body);
-        req.idempotency = { key, cacheKey, fingerprint: reqFingerprint };
+      req.idempotency = {
+        key,
+        cacheKey,
+        fingerprint: reqFingerprint,
+      };
 
-        const originalSend = res.send.bind(res);
-        res.send = (body: any): Response => {
-          const recordToCache: IdempotencyRecord = {
-            body,
-            statusCode: res.statusCode,
-            headers: res.getHeaders() as Record<
-              string,
-              string | number | string[]
-            >,
-            fingerprint: reqFingerprint,
-          };
-          redisClient.setex(
-            cacheKey,
-            ttlSeconds,
-            JSON.stringify(recordToCache),
-            setErr => {
-              if (setErr)
-                console.error('Failed to cache idempotency response:', setErr);
-            },
-          );
-          return originalSend(body);
+      const originalSend = res.send.bind(res);
+
+      res.send = (body?: unknown): Response => {
+        const recordToCache: IdempotencyRecord = {
+          body,
+          statusCode: res.statusCode,
+          headers: res.getHeaders() as Record<
+            string,
+            string | number | string[]
+          >,
+          fingerprint: reqFingerprint,
         };
-        next();
-        resolve();
-      });
-    });
+
+        void redisClient.setEx(
+          cacheKey,
+          ttlSeconds,
+          JSON.stringify(recordToCache),
+        );
+
+        return originalSend(body);
+      };
+
+      next();
+    } catch (err) {
+      console.error('Redis error in idempotency middleware:', err);
+
+      return next();
+    }
   };
 }
