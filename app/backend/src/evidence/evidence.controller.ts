@@ -47,7 +47,7 @@ export class EvidenceController {
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Upload evidence to queue',
-    description: 'Encrypts and stores evidence locally for eventual upload.',
+    description: 'Encrypts and stores evidence locally for eventual upload. Supports org-scoped deduplication.',
   })
   @ApiBody({
     schema: {
@@ -82,7 +82,8 @@ export class EvidenceController {
     }
 
     const ownerId = req.user?.apiKeyId || req.user?.authType || 'system';
-    return this.evidenceService.queueEvidence(file, ownerId);
+    const orgId = req.user?.orgId || (req.user as any)?.organization?.id;
+    return this.evidenceService.queueEvidence(file, ownerId, orgId);
   }
 
   @Get('queue')
