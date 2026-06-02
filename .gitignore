@@ -49,6 +49,18 @@ expo-env.d.ts
 # TypeScript
 *.tsbuildinfo
 
+# Python
+__pycache__/
+*.pyc
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local dumps
+output.txt
+
 # IDE
 .idea/
 .project

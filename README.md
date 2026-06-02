@@ -1,76 +1,79 @@
-# Soter Mobile Diagnostics Feature
+<p align="center">
+  <img src="assets/soter-logo.png" width="160" alt="Soter logo" />
+</p>
 
-## Overview
+# Soter
 
-This repository contains the **Soter** mobile application. The **Diagnostics** screen provides developers and support personnel with quick access to key runtime information, helping them troubleshoot issues without exposing sensitive data.
+Soter is a testnet-first humanitarian aid distribution platform built on the Stellar ecosystem (Soroban). It combines on-chain escrow + auditable events with off-chain verification and field-ready client apps.
 
-### What the Diagnostics Screen shows
-- **App Version** – pulled from `expo-constants`.
-- **Environment** – e.g., `dev`, `staging`, `prod` (displayed as a colored badge).
-- **API Reachability** – indicates whether the health endpoint is reachable.
-- **Network State** – connection status, type (wifi/cellular/etc.), and internet reachability via `@react-native-community/netinfo`.
-- **Configured Contract ID** – pulls the Soroban contract identifier from the app config.  No secrets/tokens are displayed.
-- **Copy‑to‑Clipboard** – a button that copies a sanitized diagnostics string to the clipboard for easy sharing with support.
+## What’s in this repo
 
-## Testnet Observability
+- Backend (NestJS): APIs, orchestration, persistence, on-chain adapter, observability ([backend README](app/backend/README.md))
+- Smart Contracts (Soroban/Rust): AidEscrow escrow + claim flows ([onchain README](app/onchain/README.md))
+- Frontend (Next.js): admin/donor UI, dashboards, wallet flows ([frontend README](app/frontend/README.md))
+- Mobile (Expo): field operations + pilot flows ([mobile README](app/mobile/README.md))
+- AI Service (FastAPI): OCR/anonymization/fraud checks for verification flows ([ai-service README](app/ai-service/README.md))
 
-The backend exposes Prometheus metrics at `/metrics`, queue health at `/jobs/health`, and request correlation IDs in `x-correlation-id` / `x-request-id` headers. For Testnet incident response, use [docs/testnet-observability-dashboard.md](docs/testnet-observability-dashboard.md) to track contract call latency, transaction submission failures, callback failures, and correlated job logs.
+## Quick start (local dev)
 
-## Why this matters
-- **Fast troubleshooting** – no need to open a debugger or logs; the relevant info is right in the UI.
-- **No secrets exposed** – the clipboard string omits any API keys or private tokens.
-- **Consistent styling** – uses the app’s theme and design system for a premium look.
+Prereqs:
+- Node.js 18+
+- Python 3.11+
+- Rust toolchain + Soroban CLI (for contracts)
 
-## Screenshots
-*(Add screenshots here if desired – you can generate them with the `generate_image` tool.)*
+### Backend (NestJS)
 
-## Installation & Development
 ```bash
-# Clone the repo
-git clone https://github.com/<YOUR_ORG>/Soter.git
-cd Soter/app/mobile
+cd app/backend
+npm ci
+cp .env.example .env
+npm run prisma:migrate
+npm run start:dev
+```
 
-# Install dependencies (pnpm is used in this project)
-npm install -g pnpm   # if you don't have pnpm globally
+### Frontend (Next.js)
+
+```bash
+cd app/frontend
 pnpm install
+cp .env.example .env.local
+pnpm dev
+```
 
-# Run the app (Expo)
+### AI service (FastAPI)
+
+```bash
+cd app/ai-service
+python -m venv .venv
+.venv\\Scripts\\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### Mobile (Expo)
+
+```bash
+cd app/mobile
+pnpm install
+cp .env.example .env
 pnpm start
 ```
 
-## Running the Test Suite
-```bash
-# Run all tests
-pnpm test
+## Testnet setup (high level)
 
-# Run only the HealthScreen tests (useful during development)
-pnpm test -- --testPathPattern=HealthScreen
-```
-All **12 tests pass**:
-```
-PASS src/__tests__/HealthScreen.test.tsx (8.5s)
-  HealthScreen
-    ✓ shows loading state initially
-    ✓ renders live backend data correctly
-    ✓ shows mock data label when backend fails
-    ... (other tests)
-```
+- Deploy the Soroban contracts to testnet and capture contract IDs.
+- Configure the backend to target testnet RPC + network passphrase + contract ID(s).
+- Configure frontend/mobile environment variables to point at the backend and set the testnet network + contract IDs.
 
-## Adding or Modifying Diagnostics
-1. **Update UI** – edit `src/screens/HealthScreen.tsx`.
-2. **Add tests** – extend `src/__tests__/HealthScreen.test.tsx` with appropriate queries (`getByTestId`, `getByText`).
-3. **Run tests** – ensure the new UI does not break existing functionality.
-4. **Commit** – follow the conventional commit format (`feat(diagnostics): ...`).
+Helpful starting points:
+- Backend Soroban integration notes: [SOROBAN_INTEGRATION.md](app/backend/src/onchain/SOROBAN_INTEGRATION.md)
+- Contract docs and method/event reference: [onchain README](app/onchain/README.md)
 
 ## Contributing
-- Fork the repository.
-- Create a branch named `feature/your‑description`.
-- Follow the **commit style** used in this project (see existing commits).
-- Open a Pull Request targeting `main`.
-- Ensure the test suite runs cleanly (`pnpm test`).
 
-## License
-This project is licensed under the **MIT License** – see `LICENSE` for details.
+We review contributor branches frequently. Keep PRs small and focused, and include:
+- A clear problem statement + acceptance criteria
+- Tests or a short manual test plan
+- No secrets committed (keys, tokens, seed phrases)
 
----
-*Generated by Antigravity AI assistant*
+For component-specific contribution details, follow the README in each folder linked above.
