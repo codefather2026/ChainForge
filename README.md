@@ -4,7 +4,7 @@
 
 # Soter
 
-Soter is a testnet-first humanitarian aid distribution platform built on the Stellar ecosystem (Soroban). It combines on-chain escrow and auditable events with off-chain verification and field-ready client apps.
+Soter is a humanitarian aid distribution platform built on the Stellar ecosystem (Soroban). It combines on-chain escrow and auditable events with off-chain verification and field-ready client apps.
 
 ## Features
 
