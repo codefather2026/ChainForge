@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/soter-logo.svg" width="160" alt="Soter logo" />
+  <img src="assets/soter-logo.png" width="160" alt="Soter logo" />
 </p>
 
 # Soter
