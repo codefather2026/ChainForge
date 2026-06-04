@@ -41,7 +41,9 @@ import { AppRole } from '../auth/app-role.enum';
 export class DeploymentMetadataController {
   private readonly logger = new Logger(DeploymentMetadataController.name);
 
-  constructor(private readonly deploymentMetadataService: DeploymentMetadataService) {}
+  constructor(
+    private readonly deploymentMetadataService: DeploymentMetadataService,
+  ) {}
 
   /**
    * Create a new deployment metadata record
@@ -120,7 +122,9 @@ export class DeploymentMetadataController {
     description: 'Deployment metadata for the specified network.',
     type: [DeploymentMetadataResponseDto],
   })
-  @ApiNotFoundResponse({ description: 'No deployments found for this network.' })
+  @ApiNotFoundResponse({
+    description: 'No deployments found for this network.',
+  })
   async findByNetwork(
     @Param('network') network: string,
   ): Promise<DeploymentMetadataResponseDto[]> {
@@ -136,7 +140,8 @@ export class DeploymentMetadataController {
   @Get('by-contract/:network/:contractName')
   @Roles(AppRole.admin)
   @ApiOperation({
-    summary: 'Get deployment metadata by network and contract name (admin only)',
+    summary:
+      'Get deployment metadata by network and contract name (admin only)',
     description:
       'Returns the latest deployment metadata for a specific contract on a specific network.',
   })
@@ -152,13 +157,16 @@ export class DeploymentMetadataController {
     this.logger.log(
       `Fetching deployment metadata for ${network}/${contractName}`,
     );
-    const metadata = await this.deploymentMetadataService.findByNetworkAndContractName(
-      network,
-      contractName,
-    );
+    const metadata =
+      await this.deploymentMetadataService.findByNetworkAndContractName(
+        network,
+        contractName,
+      );
 
     if (!metadata) {
-      return { message: `No deployment metadata found for ${network}/${contractName}` };
+      return {
+        message: `No deployment metadata found for ${network}/${contractName}`,
+      };
     }
 
     return metadata;
@@ -184,11 +192,16 @@ export class DeploymentMetadataController {
   async findByContractId(
     @Param('contractId') contractId: string,
   ): Promise<DeploymentMetadataResponseDto | { message: string }> {
-    this.logger.log(`Fetching deployment metadata for contract ID: ${contractId}`);
-    const metadata = await this.deploymentMetadataService.findByContractId(contractId);
+    this.logger.log(
+      `Fetching deployment metadata for contract ID: ${contractId}`,
+    );
+    const metadata =
+      await this.deploymentMetadataService.findByContractId(contractId);
 
     if (!metadata) {
-      return { message: `No deployment metadata found for contract ID ${contractId}` };
+      return {
+        message: `No deployment metadata found for contract ID ${contractId}`,
+      };
     }
 
     return metadata;

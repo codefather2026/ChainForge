@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest'; // Fixed module call signature pattern
 import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 
 describe('Deployment Metadata (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let adminToken = 'dev-admin-key-000'; // From seed data
+  const adminToken = 'dev-admin-key-000'; // From seed data
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -120,7 +120,9 @@ describe('Deployment Metadata (e2e)', () => {
           expect(Array.isArray(res.body)).toBe(true);
           // Should contain the seeded testnet AidEscrow contract
           if (res.body.length > 0) {
-            expect(res.body.some((m: any) => m.network === 'testnet')).toBe(true);
+            expect(res.body.some((m: any) => m.network === 'testnet')).toBe(
+              true,
+            );
           }
         });
     });

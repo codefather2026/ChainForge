@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import {
   CreateDeploymentMetadataDto,
   UpdateDeploymentMetadataDto,
@@ -32,7 +33,8 @@ export class DeploymentMetadataService {
         commitSha: dto.commitSha ?? null,
         deployer: dto.deployer ?? null,
         transactionHash: dto.transactionHash ?? null,
-        metadata: dto.metadata ?? null,
+        // Use Prisma.DbNull instead of standard null variables for Json fields
+        metadata: dto.metadata ?? Prisma.DbNull,
       },
     });
 
@@ -53,7 +55,9 @@ export class DeploymentMetadataService {
   /**
    * Get deployment metadata by network
    */
-  async findByNetwork(network: string): Promise<DeploymentMetadataResponseDto[]> {
+  async findByNetwork(
+    network: string,
+  ): Promise<DeploymentMetadataResponseDto[]> {
     const metadata = await this.prisma.deploymentMetadata.findMany({
       where: { network },
       orderBy: { deployedAt: 'desc' },
@@ -84,7 +88,9 @@ export class DeploymentMetadataService {
   /**
    * Get deployment metadata by contract ID
    */
-  async findByContractId(contractId: string): Promise<DeploymentMetadataResponseDto | null> {
+  async findByContractId(
+    contractId: string,
+  ): Promise<DeploymentMetadataResponseDto | null> {
     const metadata = await this.prisma.deploymentMetadata.findFirst({
       where: { contractId },
     });
@@ -108,7 +114,8 @@ export class DeploymentMetadataService {
         commitSha: dto.commitSha,
         deployer: dto.deployer,
         transactionHash: dto.transactionHash,
-        metadata: dto.metadata,
+        // Ensure explicit fallback behavior for Json type check compliance
+        metadata: dto.metadata === null ? Prisma.DbNull : dto.metadata,
       },
     });
 

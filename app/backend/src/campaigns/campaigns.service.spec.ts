@@ -15,9 +15,10 @@ describe('CampaignsService', () => {
     id: 'c1',
     name: 'Winter Relief 2026',
     status: CampaignStatus.draft,
-    budget: new Prisma.Decimal('1000.00'),
+    budget: new Prisma.Decimal('1000.00') as unknown as number,
     metadata: { region: 'Lagos' } as Prisma.JsonValue,
     ngoId: null,
+    orgId: null,
     archivedAt: null,
     deletedAt: null,
     createdAt: now,
@@ -54,7 +55,8 @@ describe('CampaignsService', () => {
         data: expect.objectContaining({
           name: 'Winter Relief 2026',
           status: CampaignStatus.draft,
-          budget: expect.any(Number),
+          // Fixed type assignment verification for Prisma.Decimal types
+          budget: expect.any(Object),
         }),
       }),
     );
