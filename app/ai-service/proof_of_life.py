@@ -137,7 +137,7 @@ class ProofOfLifeAnalyzer:
             "checks": checks,
             "reason": reason,
         }
-        
+       
         metrics.INFERENCE_LATENCY.labels(task_type="proof_of_life").observe(time.time() - start_inference)
         metrics.logger.info(f"Proof of life inference completed in {time.time() - start_inference:.4f}s")
         return result
