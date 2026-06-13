@@ -58,7 +58,7 @@ export const RedactionControls: React.FC<RedactionControlsProps> = ({
         >
           {isEditing ? 'Stop Editing' : 'Edit Redactions'}
         </button>
-        
+       
         {/* Redaction Level Selector */}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -233,7 +233,7 @@ export const RedactionHistory: React.FC<RedactionHistoryProps> = ({
   className = '',
 }) => {
   const { regions } = artifact.redactionState;
-  
+ 
   if (regions.length === 0) {
     return (
       <div className={`p-4 text-center text-gray-500 dark:text-gray-400 ${className}`}>
