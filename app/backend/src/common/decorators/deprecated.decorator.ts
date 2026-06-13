@@ -65,7 +65,7 @@ export interface DeprecationMetadata {
  *     sunsetDate: '2025-12-01',
  *     reason: 'Use the new GraphQL endpoint instead',
  *     alternative: 'POST /api/v2/users',
- *     migrationGuide: 'https://docs.pulsefy.com/migration/v2',
+ *     migrationGuide: 'https://docs.chainforge.app/migration/v2',
  *   })
  *   findAll() {
  *     // ...

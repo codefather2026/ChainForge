@@ -35,7 +35,7 @@ describe('Deprecation Headers (e2e)', () => {
         const linkHeader = res.header['link'];
         expect(linkHeader).toContain('</api/v1/health>; rel="alternate"');
         expect(linkHeader).toContain(
-          '<https://docs.pulsefy.com/migration>; rel="deprecation"',
+          '<https://docs.chainforge.app/migration>; rel="deprecation"',
         );
       });
   });

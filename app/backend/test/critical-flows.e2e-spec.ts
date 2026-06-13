@@ -73,7 +73,7 @@ describe('Critical Flows (e2e)', () => {
   afterAll(async () => {
     // Cleanup any created data
     await prisma.verificationSession.deleteMany({
-      where: { identifier: 'e2e@pulsefy.io' },
+      where: { identifier: 'e2e@chainforge.app' },
     });
     await app.close();
   });
@@ -100,7 +100,7 @@ describe('Critical Flows (e2e)', () => {
 
   describe('2. Verification Flow', () => {
     let sessionId: string;
-    const testEmail = 'e2e@pulsefy.io';
+    const testEmail = 'e2e@chainforge.app';
 
     it('should start a verification session', async () => {
       const res = await request(app.getHttpServer())

@@ -81,7 +81,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('ChainForge API')
     .setDescription(
-      "API documentation for ChainForge platform - Humanitarian aid and verification system
+      `API documentation for ChainForge platform - Humanitarian aid and verification system
 
 ## API Versioning
 
