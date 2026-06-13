@@ -1,8 +1,10 @@
 # Contributing to ChainForge Mobile
 
-Thank you for contributing to the ChainForge mobile application! This guide covers the development setup, workflow, and conventions for the mobile module.
+Thank you for contributing to the ChainForge mobile application. This guide covers the development setup, workflow, and conventions for the mobile module.
 
-## Quick Start
+---
+
+## Quick start
 
 ```bash
 pnpm install
@@ -11,9 +13,11 @@ cp .env.example .env
 pnpm start
 ```
 
-## Development Workflow
+---
 
-### Running Tests
+## Development workflow
+
+### Running tests
 
 ```bash
 pnpm test
@@ -21,7 +25,7 @@ pnpm test
 
 Runs the Jest test suite covering all screens, services, and utility functions.
 
-### Running Linting
+### Running linting
 
 ```bash
 pnpm lint
@@ -29,7 +33,7 @@ pnpm lint
 
 ESLint with Expo configuration. Fix all warnings before opening a pull request.
 
-### Starting the Dev Server
+### Starting the dev server
 
 ```bash
 pnpm start
@@ -40,28 +44,28 @@ pnpm start
 - Press `a` for Android emulator, `i` for iOS simulator
 - Use `--clear` to clear Metro cache: `expo start --clear`
 
-### Platform Commands
+### Platform commands
 
 - **Android**: `pnpm android`
 - **iOS**: `pnpm ios`
 - **Web**: `pnpm web`
 
-## Environment Configuration
+---
 
-Create `.env` from the template:
+## Environment configuration
 
 ```bash
 cp .env.example .env
 ```
 
-### Required Variables
+### Required variables
 
 ```bash
 EXPO_PUBLIC_API_URL=http://localhost:3000
 EXPO_PUBLIC_NETWORK=testnet
 ```
 
-### Finding Your Local IP
+### Finding your local IP
 
 **Windows:**
 ```bash
@@ -75,13 +79,15 @@ ifconfig | grep "inet "
 # Look for 192.168.x.x or 10.x.x.x
 ```
 
-## Branching & Workflow
+---
+
+## Branching and workflow
 
 - Create feature branches from `main`
 - Use descriptive kebab-case names: `feature/mobile-auth`, `fix/scanner-crash`
 - Keep branches focused on a single feature or fix
 
-## Commit Conventions
+## Commit conventions
 
 Follow conventional commits:
 
@@ -92,20 +98,24 @@ Follow conventional commits:
 - `refactor(mobile): ...` — Code restructuring
 - `chore(mobile): ...` — Tooling, dependencies, config
 
-## Code Standards
+---
+
+## Code standards
 
 - **TypeScript** — All source files must use TypeScript. No plain `.js`.
 - **Functional components** — Use hooks and functional patterns. No class components.
 - **Named exports** — Prefer named exports over default exports.
 - **Accessibility** — Every interactive element must have an `accessibilityLabel` and `accessibilityHint`.
-- **Minimum tap target** — 44×44 pt per WCAG 2.5.5.
+- **Minimum tap target** — 44x44 pt per WCAG 2.5.5.
 - **Dark mode** — Every screen must support both light and dark themes via `useTheme()`.
 
-### Style Guide
+### Style guide
 
 - Use `StyleSheet.create()` for component styles — no inline styles for layout.
 - Import theme colors from `useTheme()` hook: `const { colors } = useTheme()`.
 - Follow existing naming conventions and file organization.
+
+---
 
 ## Architecture
 
@@ -116,38 +126,42 @@ src/
 ├── services/          # API clients, cache, sync, wallet
 ├── contexts/          # React Context providers
 ├── theme/             # Brand colors, typography, navigation themes
-├── navigation/        # Stack navigator configuration and type definitions
+├── navigation/        # Stack navigator configuration
 ├── hooks/             # Custom React hooks
-├── types/             # TypeScript interfaces and type definitions
+├── types/             # TypeScript interfaces and definitions
 ├── config/            # Environment configuration and validation
-└── __tests__/         # Test files (co-located by feature)
+└── __tests__/         # Test files co-located by feature
 ```
+
+---
 
 ## Troubleshooting
 
-### Metro Bundler Issues
+### Metro bundler issues
 
 ```bash
 expo start --clear              # Clear Metro cache
 rm -rf node_modules && pnpm install  # Full reinstall
 ```
 
-### Connectivity Issues
+### Connectivity issues
 
 - Physical device: Update `EXPO_PUBLIC_API_URL` to your machine's LAN IP
 - Android Emulator: Use `http://10.0.2.2:3000`
 - iOS Simulator: Use `http://localhost:3000`
 - Ensure device and development machine are on the same network
 
-### Common Issues
+### Common issues
 
 | Issue | Solution |
-|-------|----------|
-| Hot reloading not working | Shake device → Reload, or press `r` in Metro terminal |
+|---|---|
+| Hot reloading not working | Shake device | Reload, or press `r` in Metro terminal |
 | App crashes on startup | Check Metro logs, verify env variables, reinstall deps |
 | Bundle errors | Check import paths, restart Metro with `--clear` |
 
-## Pull Request Checklist
+---
+
+## Pull request checklist
 
 Before submitting a PR:
 
@@ -161,7 +175,9 @@ Before submitting a PR:
 - [ ] Code follows existing style patterns
 - [ ] Accessibility labels added for new interactive elements
 
-## Getting Help
+---
+
+## Getting help
 
 1. Check existing GitHub Issues
 2. Review the [Root README](../../README.md) for project context
