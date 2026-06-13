@@ -1,10 +1,10 @@
 'use client';
 
-import { 
-  AlertTriangle, 
-  WifiOff, 
-  ServerCrash, 
-  Wallet, 
+import {
+  AlertTriangle,
+  WifiOff,
+  ServerCrash,
+  Wallet,
   RefreshCcw,
   XCircle,
   HelpCircle
@@ -31,7 +31,7 @@ export function ErrorInline({
 
   const category = manualCategory || categorizeError(error);
   const metadata = ERROR_METADATA[category];
-  
+ 
   const errorMessage = typeof error === 'string' ? error : error.message;
 
   const getCategoryIcon = () => {
@@ -75,7 +75,7 @@ export function ErrorInline({
             <p className="text-xs opacity-70 leading-relaxed">{errorMessage}</p>
           </div>
         </div>
-        
+       
         <div className="flex items-center gap-2">
           {onRetry && metadata.canRetry && (
             <button
@@ -115,7 +115,7 @@ export function ErrorInline({
         }`}>
           {getCardIcon()}
         </div>
-        
+       
         {onClose && (
           <button
             onClick={onClose}
