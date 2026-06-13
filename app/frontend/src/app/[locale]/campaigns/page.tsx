@@ -133,18 +133,18 @@ export default function CampaignsPage() {
   };
 
   const onPauseResume = async (id: string, campaignName: string, currentStatus: CampaignStatus) => {
-    const action = currentStatus === 'active' 
+    const action = currentStatus === 'active'
       ? { type: 'pause' as const, targetStatus: 'paused' as const }
       : { type: 'resume' as const, targetStatus: 'active' as const };
-    
+   
     campaignAction.mutate({ id, campaignName, action });
   };
 
   const onArchive = async (id: string, campaignName: string) => {
-    campaignAction.mutate({ 
-      id, 
-      campaignName, 
-      action: { type: 'archive' as const, targetStatus: 'archived' as const } 
+    campaignAction.mutate({
+      id,
+      campaignName,
+      action: { type: 'archive' as const, targetStatus: 'archived' as const }
     });
   };
 
