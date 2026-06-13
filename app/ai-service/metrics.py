@@ -25,7 +25,7 @@ def check_system_resources(memory_threshold_percent: float = 90.0) -> bool:
     # RAM check
     ram = psutil.virtual_memory()
     MEMORY_USAGE_PERCENT.set(ram.percent)
-    
+   
     # Try VRAM check if torch is available
     vram_percent = 0.0
     try:
@@ -42,5 +42,5 @@ def check_system_resources(memory_threshold_percent: float = 90.0) -> bool:
     if ram.percent > memory_threshold_percent or (vram_percent and vram_percent > memory_threshold_percent):
         logger.warning(f"Resource exhaustion detected! RAM: {ram.percent}%, VRAM: {vram_percent}%")
         return False
-        
+       
     return True
