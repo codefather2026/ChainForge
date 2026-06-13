@@ -1,29 +1,21 @@
 # ChainForge AI Service
 
-AI-powered document verification, proof-of-life analysis, humanitarian claim verification, and PII anonymization for the ChainForge humanitarian aid platform.
+AI-powered document verification, proof-of-life analysis, humanitarian claim verification, and PII anonymization for the ChainForge aid platform.
 
-## Architecture
+The AI Service sits between the ChainForge backend and external LLM/ML providers, providing a unified API for inference tasks. It handles OCR document extraction, facial recognition for proof-of-life, LLM-driven claim verification against Sphere Handbook criteria, anomaly-based fraud detection, and privacy-preserving text sanitization.
 
-The AI Service sits between the ChainForge backend and external LLM/ML providers, providing a unified API for:
+---
 
-- **OCR Processing** — Identity document text extraction using Tesseract
-- **Proof-of-Life Verification** — Face detection and liveness analysis via OpenCV
-- **Humanitarian Claim Verification** — LLM-driven verification against Sphere Handbook criteria
-- **PII Anonymization** — Privacy-preserving text sanitization before external processing
-- **Fraud Detection** — Unsupervised anomaly detection on claim metadata
-
-## Quick Start
+## Quick start
 
 ```bash
 pip install -r requirements.txt
 python main.py
 ```
 
-The service starts at `http://localhost:8000`. Interactive API docs are available at `/docs`.
+The service starts at `http://localhost:8000`. Interactive API documentation is available at `/docs`.
 
-## Environment Configuration
-
-Copy `.env.example` to `.env` and configure at least one AI provider:
+## Environment configuration
 
 | Variable | Default | Description |
 |---|---|---|
@@ -39,9 +31,9 @@ Copy `.env.example` to `.env` and configure at least one AI provider:
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection for task queue |
 | `BACKEND_WEBHOOK_URL` | `http://localhost:3001/ai/webhook` | Backend notification endpoint |
 
-## Core Services
+## Core services
 
-### Health & Discovery
+### Health and discovery
 
 | Endpoint | Description |
 |---|---|
@@ -49,26 +41,26 @@ Copy `.env.example` to `.env` and configure at least one AI provider:
 | `GET /health/dependencies` | Redis, provider, and filesystem probe |
 | `GET /` | Service root with API links |
 
-### OCR Processing
+### OCR processing
 
 ```
 POST /ai/ocr
 ```
 
-Upload an identity document image (JPEG, PNG, BMP, TIFF, WebP) and receive extracted fields with confidence scores.
+Extracts text fields from uploaded identity document images (JPEG, PNG, BMP, TIFF, WebP) and returns structured data with confidence scores.
 
 ```bash
 curl -X POST http://localhost:8000/ai/ocr \
   -F "image=@document.jpg"
 ```
 
-### Proof-of-Life Verification
+### Proof-of-life verification
 
 ```
 POST /ai/proof-of-life
 ```
 
-Analyze a selfie and optional burst frames for face detection and liveness signals (blink detection, head movement).
+Analyzes selfie images and optional burst frames for face detection and liveness signals (blink detection, head movement).
 
 ```json
 {
@@ -78,13 +70,13 @@ Analyze a selfie and optional burst frames for face detection and liveness signa
 }
 ```
 
-### Humanitarian Claim Verification
+### Humanitarian claim verification
 
 ```
 POST /ai/humanitarian/verify
 ```
 
-Evaluate aid claims against Sphere Handbook criteria using LLM providers with automatic fallback and circuit breaker protection.
+Evaluates aid claims against Sphere Handbook criteria using configurable LLM providers with automatic fallback and circuit breaker protection.
 
 ```json
 {
@@ -98,13 +90,13 @@ Evaluate aid claims against Sphere Handbook criteria using LLM providers with au
 }
 ```
 
-### PII Anonymization
+### PII anonymization
 
 ```
 POST /ai/anonymize
 ```
 
-Detect and mask personal identifiers (names, locations, dates, emails, phone numbers, IDs) before forwarding text to external LLM services.
+Detects and masks personal identifiers (names, locations, dates, emails, phone numbers, IDs) before forwarding text to external LLM services.
 
 ```json
 {
@@ -112,13 +104,15 @@ Detect and mask personal identifiers (names, locations, dates, emails, phone num
 }
 ```
 
-### Fraud Detection
+### Fraud detection
 
 ```
 POST /v1/ai/fraud/detect
 ```
 
-Analyze claim metadata batches using Local Outlier Factor and flag anomalous patterns.
+Analyzes claim metadata batches using Local Outlier Factor and flags anomalous patterns for manual review.
+
+---
 
 ## Versioned API
 
@@ -126,8 +120,10 @@ All routes are available under versioned and legacy paths during the transition 
 
 | Prefix | Status |
 |---|---|
-| `/v1/ai/...` | ✅ Canonical — all new development |
-| `/ai/...` | ⏳ Legacy — 308 redirects to `/v1` |
+| `/v1/ai/...` | Canonical — all new development |
+| `/ai/...` | Legacy — 308 redirects to `/v1` |
+
+---
 
 ## Deployment
 
@@ -143,17 +139,19 @@ docker compose up ai-service
 docker compose --profile gpu up ai-service-gpu
 ```
 
-### Dockerfile Targets
+### Dockerfile targets
 
-| Target | Base | Use Case |
+| Target | Base | Use case |
 |---|---|---|
-| `development` | CUDA 12.1 | Dev with hot-reload |
+| `development` | CUDA 12.1 | Development with hot-reload |
 | `production` | Python 3.10-slim | Production CPU |
 | `production-gpu` | CUDA 12.1 | Production GPU |
 
 ### Kubernetes / Cloud
 
 Set `APP_ENV=production` and configure `OPENAI_API_KEY` or `GROQ_API_KEY`. The service scales horizontally behind a load balancer; each instance manages its own circuit breaker state and Redis-backed task queue.
+
+---
 
 ## Testing
 
@@ -170,7 +168,9 @@ pytest tests/test_routes.py -v
 
 Use `AI_DETERMINISTIC_MODE=true` for stable verification outputs in CI. Use `TEST_PROVIDER_MODE=true` when no API keys are available — responses are served from fixture files under `fixtures/`.
 
-## Project Structure
+---
+
+## Project structure
 
 ```
 app/ai-service/
@@ -183,37 +183,17 @@ app/ai-service/
 ├── conftest.py               # Pytest fixtures and stubs
 ├── api/
 │   ├── routes.py             # Legacy OCR route
-│   └── v1/
-│       ├── router.py         # Versioned API aggregator
-│       ├── ocr.py
-│       ├── inference.py
-│       ├── proof_of_life.py
-│       ├── anonymize.py
-│       ├── humanitarian.py
-│       ├── fraud.py
-│       └── artifacts.py
-├── schemas/
-│   ├── ocr.py
-│   ├── anonymization.py
-│   ├── humanitarian.py
-│   ├── fraud.py
-│   └── errors.py
-├── services/
-│   ├── ocr.py                # Tesseract OCR pipeline
-│   ├── preprocessing.py      # Image preprocessing (threshold, denoise)
-│   ├── pii_scrubber.py       # PII detection and masking
-│   ├── humanitarian_verification.py  # LLM verification with fallbacks
-│   ├── humanitarian_prompt.py        # Sphere Handbook prompt templates
-│   ├── fraud_detection.py            # LOF-based anomaly detection
-│   ├── artifact_access.py           # Signed URL artifact serving
-│   ├── circuit_breaker.py           # Provider circuit breaker pattern
-│   └── test_provider.py             # Fixture-driven deterministic provider
+│   └── v1/                   # Versioned API routes
+├── schemas/                  # Request/response models
+├── services/                 # Business logic services
 ├── fixtures/                 # Test fixture response files
 ├── tests/                    # Unit and integration tests
 ├── Dockerfile                # Multi-stage Docker build
 ├── docker-compose.yml        # Service orchestration
 └── requirements.txt          # Python dependencies
 ```
+
+---
 
 ## Contributing
 
