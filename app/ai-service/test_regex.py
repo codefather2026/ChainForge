@@ -23,5 +23,5 @@ def test_pattern(text, expected):
             matched_value = match.group(1).strip()
             print(f"Matched: '{matched_value}'")
             break
-    
+   
     assert matched_value == expected, f"Expected {expected}, but got {matched_value} for text: {text}"
