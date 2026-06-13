@@ -41,7 +41,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
   const [currentRegion, setCurrentRegion] = useState<Partial<RedactionRegion> | null>(null);
-  
+ 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -49,7 +49,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     if (mode === 'original' && !artifact.permissions.canViewOriginal) return;
     if (mode === 'redacted' && !artifact.permissions.canViewRedacted) return;
-    
+   
     setViewerState(prev => ({ ...prev, viewMode: mode }));
   }, [artifact.permissions]);
 
@@ -69,7 +69,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
   // Handle redaction region selection
   const handleRegionClick = useCallback((regionId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    
+   
     if (!viewerState.isEditingRedactions) {
       setViewerState(prev => ({
         ...prev,
@@ -83,7 +83,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
   // Handle redaction region removal
   const handleRemoveRegion = useCallback((regionId: string) => {
     if (!artifact.permissions.canModifyRedactions) return;
-    
+   
     const updatedRegions = artifact.redactionState.regions.filter(r => r.id !== regionId);
     const updatedArtifact = {
       ...artifact,
@@ -94,7 +94,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
         modifiedBy: 'current-user', // This would come from auth context
       },
     };
-    
+   
     onArtifactUpdate?.(updatedArtifact);
     onRedactionChange?.(updatedRegions);
   }, [artifact, onArtifactUpdate, onRedactionChange]);
@@ -166,8 +166,8 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
     if (!viewerState.showRedactionOverlay) return null;
     if (viewerState.viewMode === 'original') return null;
 
-    const regions = viewerState.viewMode === 'redacted' 
-      ? artifact.redactionState.regions 
+    const regions = viewerState.viewMode === 'redacted'
+      ? artifact.redactionState.regions
       : [];
 
     return (
@@ -187,17 +187,17 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
               top: `${region.y}%`,
               width: `${region.width}%`,
               height: `${region.height}%`,
-              backgroundColor: selectedTool.type === 'blackout' ? 'rgba(0, 0, 0, 0.9)' : 
-                           selectedTool.type === 'blur' ? 'rgba(255, 255, 255, 0.8)' : 
+              backgroundColor: selectedTool.type === 'blackout' ? 'rgba(0, 0, 0, 0.9)' :
+                           selectedTool.type === 'blur' ? 'rgba(255, 255, 255, 0.8)' :
                            'rgba(0, 0, 0, 0.7)',
-              backdropFilter: selectedTool.type === 'blur' ? 'blur(8px)' : 
+              backdropFilter: selectedTool.type === 'blur' ? 'blur(8px)' :
                              selectedTool.type === 'pixelate' ? 'pixelate(8)' : 'none',
             }}
             onClick={(e) => handleRegionClick(region.id, e)}
             title={region.reason}
           />
         ))}
-        
+       
         {/* Current drawing region */}
         {isDrawing && currentRegion && (
           <div
@@ -217,7 +217,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
   // Render artifact content based on type
   const renderArtifactContent = useCallback(() => {
     const { metadata, content } = artifact;
-    
+   
     switch (metadata.type) {
       case 'image':
         return (
@@ -235,7 +235,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
             {renderRedactionOverlay()}
           </div>
         );
-      
+     
       case 'document':
         return (
           <div className="relative">
@@ -247,7 +247,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
             {renderRedactionOverlay()}
           </div>
         );
-      
+     
       case 'text':
         return (
           <div className="relative p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -259,7 +259,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
             {renderRedactionOverlay()}
           </div>
         );
-      
+     
       default:
         return (
           <div className="p-4 text-center text-gray-500">
@@ -280,7 +280,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
               {artifact.metadata.type} • {(artifact.metadata.size / 1024 / 1024).toFixed(2)} MB
             </span>
           </div>
-          
+         
           {/* View mode controls */}
           <div className="flex items-center space-x-2">
             {artifact.permissions.canViewOriginal && (
@@ -321,7 +321,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
             )}
           </div>
         </div>
-        
+       
         {/* Zoom controls */}
         <div className="flex items-center space-x-2 mt-3">
           <button
@@ -383,7 +383,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
             >
               {viewerState.isEditingRedactions ? 'Stop Editing' : 'Edit Redactions'}
             </button>
-            
+           
             {viewerState.isEditingRedactions && (
               <div className="flex items-center space-x-2">
                 <select
@@ -395,7 +395,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
                   <option value="blur">Blur</option>
                   <option value="pixelate">Pixelate</option>
                 </select>
-                
+               
                 <input
                   type="text"
                   placeholder="Reason for redaction"
@@ -406,7 +406,7 @@ export const EvidenceArtifactViewer: React.FC<EvidenceArtifactViewerProps> = ({
               </div>
             )}
           </div>
-          
+         
           {/* Selected regions actions */}
           {viewerState.selectedRegions.length > 0 && (
             <div className="mt-3 flex items-center space-x-2">
