@@ -45,7 +45,7 @@ const createTestApp = async ({ enableDocs }: TestAppOptions) => {
 
   if (enableDocs) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Pulsefy/Soter API')
+      .setTitle('ChainForge API')
       .setVersion('1.0')
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
@@ -106,7 +106,7 @@ describe('Security (e2e)', () => {
 
     it('should have production security headers in production mode', async () => {
       process.env.NODE_ENV = 'production';
-      process.env.CORS_ORIGINS = 'https://api.pulsefy.com';
+      process.env.CORS_ORIGINS = 'https://api.chainforge.app';
       process.env.CORS_ALLOW_CREDENTIALS = 'false';
 
       const prodApp = await createTestApp({ enableDocs: false });

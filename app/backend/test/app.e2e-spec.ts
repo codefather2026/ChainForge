@@ -21,7 +21,7 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect((res: { body: { message?: string } }) => {
-        expect(res.body.message).toBe('Welcome to Pulsefy/Soter API');
+        expect(res.body.message).toBe('Welcome to ChainForge API');
       });
   });
 });

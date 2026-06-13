@@ -615,7 +615,7 @@ export class ClaimsService {
     lines.push('');
     lines.push('═══════════════════════════════════════');
     lines.push('This is an automated proof of claim');
-    lines.push('completion on the Soter platform.');
+    lines.push('completion on the ChainForge platform.');
     lines.push('═══════════════════════════════════════');
 
     return lines.join('\n');

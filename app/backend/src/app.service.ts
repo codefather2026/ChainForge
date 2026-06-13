@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class AppService {
   getHello() {
     return {
-      message: 'Welcome to Pulsefy/Soter API',
+      message: 'Welcome to ChainForge API',
       version: 'v1',
       docs: '/api/docs',
       endpoints: {

@@ -79,9 +79,9 @@ async function bootstrap() {
 
   // Swagger/OpenAPI Documentation
   const config = new DocumentBuilder()
-    .setTitle('Pulsefy/Soter API')
+    .setTitle('ChainForge API')
     .setDescription(
-      `API documentation for Pulsefy/Soter platform - Emergency aid and verification system
+      "API documentation for ChainForge platform - Humanitarian aid and verification system
 
 ## API Versioning
 
@@ -129,14 +129,14 @@ When new versions are released:
       'api-key',
     )
     .addServer('http://localhost:3000/api/v1', 'Local Development (v1)')
-    .addServer('https://api.pulsefy.dev/api/v1', 'Staging (v1)')
-    .addServer('https://api.pulsefy.com/api/v1', 'Production (v1)')
+    .addServer('https://api.chainforge.app/api/v1', 'Staging (v1)')
+    .addServer('https://api.chainforge.app/api/v1', 'Production (v1)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document, {
-    customSiteTitle: 'Pulsefy API Docs',
-    customfavIcon: 'https://pulsefy.com/favicon.ico',
+    customSiteTitle: 'ChainForge API Docs',
+    customfavIcon: 'https://chainforge.app/favicon.ico',
     customCss: '.swagger-ui .topbar { display: none }',
     swaggerOptions: {
       persistAuthorization: true,

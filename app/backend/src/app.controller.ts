@@ -21,7 +21,7 @@ export class AppController {
     description: 'Welcome message returned successfully.',
     schema: {
       example: {
-        message: 'Welcome to Pulsefy/Soter API',
+        message: 'Welcome to ChainForge API',
         version: 'v1',
         docs: '/api/docs',
       },
@@ -50,7 +50,7 @@ export class AppController {
     sunsetDate: '2025-12-31',
     reason: 'This endpoint is for testing deprecation headers.',
     alternative: '/api/v1/health',
-    migrationGuide: 'https://docs.pulsefy.com/migration',
+    migrationGuide: 'https://docs.chainforge.app/migration',
   })
   deprecatedTest() {
     return { message: 'This endpoint is deprecated' };

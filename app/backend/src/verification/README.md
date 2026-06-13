@@ -32,7 +32,7 @@ Database Update (Prisma)
 
 ## OTP / Identity Verification Flow
 
-Soter supports an OTP-based verification flow (email or phone) with rate limiting.
+ChainForge supports an OTP-based verification flow (email or phone) with rate limiting.
 
 ### Endpoints
 

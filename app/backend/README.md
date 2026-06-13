@@ -37,7 +37,7 @@ All environment variables are documented in [`.env.example`](.env.example) with 
 | `PORT` | Port the NestJS server listens on | `3001` | No |
 | `NODE_ENV` | Node environment (`development`, `production`, `test`) | `development` | No |
 | **Database** |
-| `DATABASE_URL` | PostgreSQL connection string for Prisma | `postgresql://postgres:postgres@localhost:5432/soter?schema=public` | Yes |
+| `DATABASE_URL` | PostgreSQL connection string for Prisma | `postgresql://postgres:postgres@localhost:5432/chainforge?schema=public` | Yes |
 | **Blockchain (Stellar/Soroban)** |
 | `STELLAR_RPC_URL` | Stellar RPC endpoint for Soroban interactions | `https://soroban-testnet.stellar.org` | Yes |
 | `STELLAR_NETWORK_PASSPHRASE` | Network passphrase (auto-detected if not set) | Auto-detected | No |

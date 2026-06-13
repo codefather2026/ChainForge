@@ -17,7 +17,7 @@ describe('AppController', () => {
   describe('root', () => {
     it('should return welcome message', () => {
       expect(appController.getHello()).toEqual({
-        message: 'Welcome to Pulsefy/Soter API',
+        message: 'Welcome to ChainForge API',
         version: 'v1',
         docs: '/api/docs',
         endpoints: {
