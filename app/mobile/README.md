@@ -1,123 +1,129 @@
-# Soter Mobile 📱
+# ChainForge Mobile 📱
 
-Mobile application for field operations and pilots, built with Expo and TypeScript.
+Field operations application for humanitarian aid distribution, built with Expo and TypeScript.
+
+## Overview
+
+ChainForge Mobile empowers field operators, NGO workers, and recipients to interact with on-chain aid packages directly from their mobile devices. The app supports QR-based package scanning, wallet connection via WalletConnect v2, and real-time system health monitoring.
 
 ## Features
 
-- **Home Screen**: Overview and quick actions.
-- **Health Screen**: Real-time system status monitoring with environment indicator.
-- **Navigation**: Built with React Navigation.
-- **Environment Support**: Uses `EXPO_PUBLIC_*` for configuration.
+- **Home Screen** — Quick overview, wallet connection, and primary actions.
+- **QR Scanner** — Scan `chainforge://` deep links to view and claim aid packages.
+- **Bulk Scanner** — High-throughput scanning mode for field operators processing multiple packages.
+- **Health Screen** — Real-time system diagnostics with environment indicator and mock-data fallback.
+- **Wallet Integration** — WalletConnect v2 pairing with compatible Stellar wallets (Lobstr, Freighter, Beans).
+- **Biometric Lock** — Face ID / fingerprint protection for sensitive aid details.
+- **Saver Mode** — Automatic data-saving mode on slow or metered connections.
+- **Offline Queue** — Claim confirmations queued and retried when connectivity is restored.
 
 ## Setup
 
-1. **Install dependencies**:
-   ```bash
-   pnpm install
-   ```
+### Prerequisites
 
-2. **Configure environment variables**:
-   Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   Update `EXPO_PUBLIC_API_URL` to point to your backend.
+- Node.js 18+
+- pnpm or npm
+- Expo CLI (`npm install -g expo-cli`)
+- iOS Simulator (macOS) or Android Emulator, or a physical device with Expo Go
 
-3. **Start the app**:
-   ```bash
-   pnpm start
-   ```
+### Installation
 
-## Environment Variables
+```bash
+cd app/mobile
+pnpm install
+```
 
-All Expo public variables are prefixed with `EXPO_PUBLIC_` and are safe to ship in any build — they contain no secrets.
+### Environment Variables
+
+Copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+All Expo public variables use the `EXPO_PUBLIC_` prefix — they are safe to ship in any build.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `EXPO_PUBLIC_API_URL` | Yes | `http://localhost:3000` | Full URL of the backend API. Used by the Health Screen and the API service. |
-| `EXPO_PUBLIC_ENV_NAME` | No | auto-inferred | Human-readable label shown in the Health Screen badge and footer (e.g. `dev`, `staging`, `prod`). |
-| `EXPO_PUBLIC_NETWORK` | No | `testnet` | Blockchain network identifier. |
-| `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` | Yes for wallet connect | none | WalletConnect v2 project id used by the mobile wallet pairing flow. |
-| `EXPO_PUBLIC_WALLETCONNECT_STELLAR_CHAIN_ID` | No | inferred from `EXPO_PUBLIC_NETWORK` | Optional CAIP-2 override for the Stellar WalletConnect chain id. |
+| `EXPO_PUBLIC_API_URL` | Yes | `http://localhost:3000` | Backend API base URL |
+| `EXPO_PUBLIC_ENV_NAME` | No | auto-inferred | Environment label (`dev`, `staging`, `prod`) |
+| `EXPO_PUBLIC_NETWORK` | No | `testnet` | Stellar network identifier |
+| `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` | Yes\* | — | WalletConnect v2 project ID |
+| `EXPO_PUBLIC_SOROBAN_CONTRACT_ID` | No | — | Deployed AidEscrow contract ID |
 
-### `EXPO_PUBLIC_API_URL`
+\* Required for wallet pairing flows.
+
+#### API URL Examples
 
 ```bash
-# Local development (iOS Simulator)
+# iOS Simulator
 EXPO_PUBLIC_API_URL=http://localhost:3000
 
-# Local development (Android Emulator)
+# Android Emulator
 EXPO_PUBLIC_API_URL=http://10.0.2.2:3000
 
-# Physical device – use your machine's LAN IP
+# Physical device (use LAN IP)
 EXPO_PUBLIC_API_URL=http://192.168.1.10:3000
 
-# Staging / production
-EXPO_PUBLIC_API_URL=https://api.staging.example.com
+# Production
+EXPO_PUBLIC_API_URL=https://api.chainforge.app
 ```
 
-### `EXPO_PUBLIC_ENV_NAME` (optional)
+### Deep Link Scheme
 
-Sets the coloured environment badge visible in the Health Screen header and footer.
-If omitted, the label is **auto-inferred** from `EXPO_PUBLIC_API_URL`:
+The app registers the `chainforge://` custom scheme for QR code scanning and wallet return flows:
 
-| URL contains | Inferred label | Badge colour |
-|---|---|---|
-| `prod` | `prod` | 🔴 red |
-| `staging` | `staging` | 🟠 amber |
-| anything else | `dev` | 🔵 blue |
+- **Package links**: `chainforge://package/{aidId}`
+- **Wallet callbacks**: `chainforge://wallet/callback`
 
-```bash
-EXPO_PUBLIC_ENV_NAME=dev      # or staging, prod, or any custom name
-```
+### WalletConnect Setup
 
-> The badge and footer text are always visible (there are no secrets) so they are safe to leave in production builds.
-
-### WalletConnect setup
-
-The Home Screen now includes a `Connect Wallet` action for mobile Stellar wallets.
-
-1. Create a WalletConnect project at `https://dashboard.walletconnect.com`.
-2. Set `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` in `.env`.
-3. Build a development client or production build so the custom `soter://` scheme is registered on the device.
+1. Create a project at [WalletConnect Dashboard](https://dashboard.walletconnect.com)
+2. Set `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` in `.env`
+3. Build a development client or production build to register the `chainforge://` scheme
 
 ```bash
 EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
 EXPO_PUBLIC_WALLETCONNECT_STELLAR_CHAIN_ID=stellar:testnet
 ```
 
-Notes:
+### Running
 
-- The app requests a WalletConnect `stellar:*` namespace and stores the connected public key from the approved session.
-- `soter://` is configured as the mobile deep-link scheme so the wallet can return the user to Soter after approval.
-- SEP-7 transaction URI helpers are included in the mobile wallet service for the next signing flow.
+```bash
+pnpm start          # Expo dev server
+pnpm android        # Android emulator / device
+pnpm ios            # iOS simulator / device
+pnpm web            # Web browser preview
+```
 
 ## Health Screen
 
-The Health Screen fetches backend health from `${EXPO_PUBLIC_API_URL}/health`.  
-If the backend is unreachable it falls back to mock data.
+The Health Screen fetches backend status from `${EXPO_PUBLIC_API_URL}/health`. If unreachable, it falls back to mock data with a **"🔧 MOCK"** badge and troubleshooting tips.
 
-The screen always shows a small **environment badge** (top-right of the header) and a **footer row** of the form:
+An **environment badge** (top-right header) and **footer row** display the active configuration:
 
 ```
 Environment: dev · localhost:3000
 ```
 
-This lets testers and field users confirm the API target without navigating to any settings page.
-
 ## Scripts
 
-- `pnpm start`: Start Expo dev server with Metro bundler
-- `pnpm android`: Run on Android emulator or device
-- `pnpm ios`: Run on iOS simulator or device
-- `pnpm web`: Run in web browser for testing
-- `pnpm test`: Run Jest test suite
-- `pnpm lint`: Run ESLint for code quality checks
+| Script | Purpose |
+|--------|---------|
+| `pnpm start` | Start Expo dev server with Metro bundler |
+| `pnpm android` | Run on Android emulator or device |
+| `pnpm ios` | Run on iOS simulator or device |
+| `pnpm web` | Run in web browser for testing |
+| `pnpm test` | Run Jest test suite |
+| `pnpm lint` | Run ESLint for code quality |
 
 ## Troubleshooting
 
-- **Connection refused**: If running on a physical device, ensure `EXPO_PUBLIC_API_URL` uses your machine's local IP address.
-- **Metro not starting**: Try clearing the cache with `expo start -c`.
-- **Wrong environment shown**: Verify `.env` contains the correct `EXPO_PUBLIC_ENV_NAME` or `EXPO_PUBLIC_API_URL`, then restart Metro (`expo start -c`).
+| Problem | Solution |
+|---------|----------|
+| Connection refused | Use machine's LAN IP for physical devices |
+| Metro not starting | Clear cache: `expo start -c` |
+| Wrong environment | Verify `.env` values, restart Metro with `-c` |
+| WalletConnect fails | Confirm `EXPO_PUBLIC_WALLETCONNECT_PROJECT_ID` is set |
 
-For detailed development setup, testing procedures, and comprehensive troubleshooting, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+For detailed development workflow and testing procedures, see [CONTRIBUTING.md](./CONTRIBUTING.md).
