@@ -19,16 +19,12 @@ interface LogEntry {
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
-  protected readonly logger: PinoLogger;
-  protected readonly asyncLocalStorage: AsyncLocalStorage<Map<string, unknown>>;
+  protected logger: PinoLogger;
+  protected asyncLocalStorage: AsyncLocalStorage<Map<string, unknown>>;
 
-  constructor(
-    logger?: PinoLogger,
-    asyncLocalStorage?: AsyncLocalStorage<Map<string, unknown>>,
-  ) {
-    this.logger = logger ?? LoggerService.createLogger(this);
-    this.asyncLocalStorage =
-      asyncLocalStorage ?? new AsyncLocalStorage<Map<string, unknown>>();
+  constructor() {
+    this.asyncLocalStorage = new AsyncLocalStorage<Map<string, unknown>>();
+    this.logger = LoggerService.createLogger(this);
   }
 
   private static createLogger(service: LoggerService): PinoLogger {
@@ -207,6 +203,8 @@ export class BoundLogger extends LoggerService {
     logger: PinoLogger,
     asyncLocalStorage: AsyncLocalStorage<Map<string, unknown>>,
   ) {
-    super(logger, asyncLocalStorage);
+    super();
+    this.logger = logger;
+    this.asyncLocalStorage = asyncLocalStorage;
   }
 }
